@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">yellowganize</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_add_post">AddPost</string>
+    <string name="picBtnlabel">Pick Picture</string>
+    <string name="dateBtnlabel">Select Date</string>
+    <string name="timeBtnlabel">Select Time</string>
+    <string name="submitBtnlabel">Go</string>
+</resources>
