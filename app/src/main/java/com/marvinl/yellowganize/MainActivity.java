@@ -1,22 +1,40 @@
 package com.marvinl.yellowganize;
 
+import android.app.Activity;
+import android.arch.persistence.room.Room;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.List;
+
+import static android.content.ContentValues.TAG;
+
+public class MainActivity extends Activity {
+    List<Post> postList;
+    ListView listView;
+    final AppBdd db = Room.databaseBuilder(MainActivity.this, AppBdd.class, "Yellowganize").build();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        new GetListTask().execute();
+
+        listView = (ListView) findViewById(R.id.list_posts);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -24,6 +42,52 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, AddPostActivity.class));
             }
         });
+    }
+
+    private class GetListTask extends AsyncTask<Void, Void, List> {
+
+        @Override
+        protected List<Post> doInBackground(Void... voids) {
+            return db.postDao().getAll();
+        }
+
+
+        @Override
+        protected void onPostExecute(List list) {
+            Log.d(TAG, "onPostExecute: " + list);
+            postList = list;
+            listView.setAdapter(new MyAdapter());
+
+        }
+    }
+
+    private class MyAdapter extends BaseAdapter{
+        @Override
+        public Post getItem(int i) {
+            return postList.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return postList.get(i).getId();
+        }
+
+        @Override
+        public int getCount() {
+            return postList.size();
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            if(view == null){
+                view = getLayoutInflater().inflate(R.layout.list_item, viewGroup,false);
+            }
+            ((TextView) view.findViewById(R.id.listdate)).setText(getItem(i).getDay()+"/"+getItem(i).getMonth()+"/"+getItem(i).getYear());
+            ((TextView) view.findViewById(R.id.listtime)).setText(getItem(i).getHour()+":"+getItem(i).getMinute());
+            ((TextView) view.findViewById(R.id.listcaption)).setText(getItem(i).getCaption());
+            ((ImageView) view.findViewById(R.id.listpicture)).setImageURI(Uri.parse(getItem(i).getPicture()));
+            return view;
+        }
     }
 
     @Override
